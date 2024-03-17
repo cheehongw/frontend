@@ -8,27 +8,24 @@ import {
   Text as KonvaText
 } from 'react-konva';
 
-import CSEMachine from '../../CSEMachine';
-import { Config, ShapeDefaultProps } from '../../CSEMachineConfig';
-import { Layout } from '../../CSEMachineLayout';
-import { ReferenceType } from '../../CSEMachineTypes';
-import { getBodyText, getParamsText, getTextWidth } from '../../CSEMachineUtils';
+import CseMachine from '../../CseMachine';
+import { Config, ShapeDefaultProps } from '../../CseMachineConfig';
+import { Layout } from '../../CseMachineLayout';
+import { IHoverable, ReferenceType } from '../../CseMachineTypes';
+import { defaultSAColor, getBodyText, getParamsText, getTextWidth } from '../../CseMachineUtils';
 import { ArrowFromFn } from '../arrows/ArrowFromFn';
-import { GenericArrow } from '../arrows/GenericArrow';
 import { Binding } from '../Binding';
-import { Frame } from '../Frame';
-import { FnValue } from './FnValue';
 import { Value } from './Value';
 
 /** this encapsulates a function from the global frame
  * (which has no extra props such as environment or fnName) */
-export class GlobalFnValue extends Value {
+export class GlobalFnValue extends Value implements IHoverable {
   centerX: number;
   readonly tooltipWidth: number;
   readonly exportTooltipWidth: number;
   readonly radius: number = Config.FnRadius;
   readonly innerRadius: number = Config.FnInnerRadius;
-  private _arrow: GenericArrow<FnValue | GlobalFnValue, Frame> | undefined;
+  private _arrow: ArrowFromFn | undefined;
 
   readonly paramsText: string;
   readonly bodyText: string;
@@ -37,7 +34,6 @@ export class GlobalFnValue extends Value {
   readonly exportTooltip: string;
   private selected: boolean = false;
 
-  readonly ref: RefObject<any> = React.createRef();
   readonly labelRef: RefObject<any> = React.createRef();
 
   constructor(
@@ -87,11 +83,10 @@ export class GlobalFnValue extends Value {
       getTextWidth(this.exportBodyText)
     );
   }
-
   isSelected(): boolean {
     return this.selected;
   }
-  arrow(): GenericArrow<FnValue | GlobalFnValue, Frame> | undefined {
+  arrow(): ArrowFromFn | undefined {
     return this._arrow;
   }
 
@@ -116,12 +111,12 @@ export class GlobalFnValue extends Value {
   }
 
   onMouseEnter = ({ currentTarget }: KonvaEventObject<MouseEvent>) => {
-    if (CSEMachine.getPrintableMode()) return;
+    if (CseMachine.getPrintableMode()) return;
     this.labelRef.current.show();
   };
 
   onMouseLeave = ({ currentTarget }: KonvaEventObject<MouseEvent>) => {
-    if (CSEMachine.getPrintableMode()) return;
+    if (CseMachine.getPrintableMode()) return;
     if (!this.selected) {
       this.labelRef.current.hide();
     } else {
@@ -130,7 +125,7 @@ export class GlobalFnValue extends Value {
     }
   };
   onClick = ({ currentTarget }: KonvaEventObject<MouseEvent>) => {
-    if (CSEMachine.getPrintableMode()) return;
+    if (CseMachine.getPrintableMode()) return;
     this.selected = !this.selected;
     if (!this.selected) {
       this.labelRef.current.hide();
@@ -142,7 +137,8 @@ export class GlobalFnValue extends Value {
   draw(): React.ReactNode {
     this._isDrawn = true;
     this._arrow =
-      Layout.globalEnvNode.frame && new ArrowFromFn(this).to(Layout.globalEnvNode.frame);
+      Layout.globalEnvNode.frame &&
+      (new ArrowFromFn(this).to(Layout.globalEnvNode.frame) as ArrowFromFn);
     return (
       <React.Fragment key={Layout.key++}>
         <Group
@@ -157,9 +153,7 @@ export class GlobalFnValue extends Value {
             x={this.centerX - this.radius}
             y={this.y()}
             radius={this.radius}
-            stroke={
-              CSEMachine.getPrintableMode() ? Config.SA_BLUE.toString() : Config.SA_WHITE.toString()
-            }
+            stroke={defaultSAColor()}
           />
           <Circle
             {...ShapeDefaultProps}
@@ -167,9 +161,7 @@ export class GlobalFnValue extends Value {
             x={this.centerX - this.radius}
             y={this.y()}
             radius={this.innerRadius}
-            fill={
-              CSEMachine.getPrintableMode() ? Config.SA_BLUE.toString() : Config.SA_WHITE.toString()
-            }
+            fill={defaultSAColor()}
           />
           <Circle
             {...ShapeDefaultProps}
@@ -177,9 +169,7 @@ export class GlobalFnValue extends Value {
             x={this.centerX + this.radius}
             y={this.y()}
             radius={this.radius}
-            stroke={
-              CSEMachine.getPrintableMode() ? Config.SA_BLUE.toString() : Config.SA_WHITE.toString()
-            }
+            stroke={defaultSAColor()}
           />
           <Circle
             {...ShapeDefaultProps}
@@ -187,12 +177,10 @@ export class GlobalFnValue extends Value {
             x={this.centerX + this.radius}
             y={this.y()}
             radius={this.innerRadius}
-            fill={
-              CSEMachine.getPrintableMode() ? Config.SA_BLUE.toString() : Config.SA_WHITE.toString()
-            }
+            fill={defaultSAColor()}
           />
         </Group>
-        {CSEMachine.getPrintableMode() ? (
+        {CseMachine.getPrintableMode() ? (
           <KonvaLabel
             x={this.x() + this.width() + Config.TextPaddingX * 2}
             y={this.y() - Config.TextPaddingY}
@@ -227,7 +215,7 @@ export class GlobalFnValue extends Value {
             />
           </KonvaLabel>
         )}
-        {this._arrow?.draw()}
+        {Layout.globalEnvNode.frame && new ArrowFromFn(this).to(Layout.globalEnvNode.frame).draw()}
       </React.Fragment>
     );
   }

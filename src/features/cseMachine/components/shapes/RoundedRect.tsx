@@ -2,7 +2,7 @@ import { KonvaEventObject } from 'konva/lib/Node';
 import React, { RefObject } from 'react';
 import { Shape } from 'react-konva';
 
-import { ShapeDefaultProps } from '../../CSEMachineConfig';
+import { ShapeDefaultProps } from '../../CseMachineConfig';
 
 interface Props {
   x: number;
@@ -20,7 +20,7 @@ interface Props {
 }
 
 /**
- * Represents Rectangle with rounded corners, for boundary of arrays (compact and non-compact).
+ * Represents Rectangle with rounded corners, for boundary of arrays.
  */
 export const RoundedRect: React.FC<Props> = ({
   x,
